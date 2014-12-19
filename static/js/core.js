@@ -28,11 +28,13 @@
 
 	// create analyser
 	var audio_analyser = audio_ctx.createAnalyser();
+	audio_analyser.fftSize = 256;
+	var audio_analyser_buffer = new Uint8Array(256);
 	audio_analyser.connect(audio_out_gain);
 
 	// create master gain node
-	var audio_analyser_in_gain = audio_ctx.createGain();
-	audio_analyser_in_gain.connect(audio_analyser);
+	var audio_analyser_pre_gain = audio_ctx.createGain();
+	audio_analyser_pre_gain.connect(audio_analyser);
 
 	// store in window.core.audio
 	var audio_processors = {};
@@ -55,7 +57,7 @@
 	window.core.audio.sample_rate = audio_ctx.sampleRate;
 
 	/*
-		canvas draw
+		initialize canvas analyser
 	*/
 
 	// Shim by Paul Irish
@@ -71,16 +73,41 @@
 			  };
 	})();
 
-	function render_oscilloscope(canvas) {
+	var render_oscilloscope = function(canvas, analyser) {
 		var canvas_ctx = canvas.getContext('2d');
 		var canvas_width = canvas.width;
 		var canvas_height = canvas.height;
 
 		requestAnimFrame(function(){
-			that.render();
+			render_oscilloscope(canvas, analyser);
 		});
-	}
+		
+		analyser.getByteFrequencyData(audio_analyser_buffer);
 
+		var fft_num_bins = analyser.frequencyBinCount;
+
+		canvas_ctx.fillStyle = 'rgb(0, 0, 0)';
+		canvas_ctx.fillRect(0, 0, canvas_width, canvas_height);
+
+		var barWidth = (canvas_width / fft_num_bins) * 2.5;
+		var barHeight;
+		var x = 0;
+
+		for(var i = 0; i < fft_num_bins; i++) {
+			barHeight = audio_analyser_buffer[i];
+
+			canvas_ctx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+			canvas_ctx.fillRect(x,canvas_height-barHeight/2,barWidth,barHeight/2);
+
+			x += barWidth + 1;
+		}
+
+		/*
+		canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
+		canvas_ctx.fillStyle = "red"
+		canvas_ctx.fillRect(0, 0, canvas.width, canvas.height);
+		*/
+	}
 
 	/*
 		document ready callback
@@ -110,18 +137,30 @@
 		});
 
 		// init global controls
-		var $audio_controls = $('div#audio_controls);
+		var $audio_controls = $('div#audio_controls');
 
 		// init oscilloscope
-		var $canvas_oscilloscope = $audio_controls.find('canvas#oscilloscope');
-		var canvas_oscilloscope_ctx = $canvas_oscilloscope.el.getContext('2d');
-		render_oscilloscope($canvas_oscilloscope.el);
+		var canvas_oscilloscope = $audio_controls.find('canvas#oscilloscope').first().get(0);
+		var canvas_oscilloscope_ctx = canvas_oscilloscope.getContext('2d');
+		render_oscilloscope(canvas_oscilloscope, audio_analyser);
 
-		// init gain slider
+		// init pre-analyser gain slider
 		var gain_min = 0;
 		var gain_max = 100;
-		var gain_initial = 75;
-		var $slider_gain = $audio_controls.find('input#gain');
+		var $slider_analyser_pre_gain = $audio_controls.find('input#output_gain').first();
+		$slider_gain.attr('min', gain_min);
+		$slider_gain.attr('max', gain_max);
+		$slider_gain.attr('value', gain_initial);
+		$slider_gain.on('input', function () {
+			var $el = $(this);
+			var value_new = Number($el.val());
+			value_new = value_new / gain_max;
+			value_new = value_new * value_new;
+			audio_out_gain.gain.value = value_new;
+		});
+
+		// init gain slider
+		var $slider_gain = $audio_controls.find('input#output_gain').first();
 		$slider_gain.attr('min', gain_min);
 		$slider_gain.attr('max', gain_max);
 		$slider_gain.attr('value', gain_initial);
