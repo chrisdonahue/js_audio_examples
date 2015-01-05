@@ -1,0 +1,13 @@
+div#audio_controls {
+	border: 2px solid;
+	border-radius: 4px;
+	padding: 4px;
+}
+
+div#audio_controls input {
+	display: inline;
+}
+
+div#audio_controls label {
+	display: block;
+}
