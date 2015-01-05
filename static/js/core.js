@@ -13,11 +13,11 @@
 
 	// init web audio
 	var audio_ctx = null;
-	var audio_ctx_enabled = false;
+	var audio_enabled = false;
 	try {
 		window.AudioContext = window.AudioContext || window.webkitAudioContext;
 		audio_ctx = new AudioContext();
-		audio_ctx_enabled = audio_ctx !== null;
+		audio_enabled = audio_ctx !== null;
 	} catch (e) {
 		alert("Webkit Audio API not supported on this browser");
 	}
@@ -36,18 +36,18 @@
 	var audio_analyser_pre_gain = audio_ctx.createGain();
 	audio_analyser_pre_gain.connect(audio_analyser);
 
-	// store in window.core.audio
+	// add callback for audio processors
 	var audio_processors = {};
 	var audio_processor_block_size = 1024;
 	var audio_processor_input_num_channels = 1;
 	var audio_processor_output_num_channels = 1;
 	window.core.audio.add_source = function (source_name, process_callback) {
-		if (audio_ctx_enabled) {
+		if (audio_enabled) {
 			try {
 				var source_new = audio_ctx.createScriptProcessor(audio_processor_block_size, audio_processor_input_num_channels, audio_processor_output_num_channels);
 				source_new.onaudioprocess = process_callback;
 				audio_processors[source_name] = source_new;
-				source_new.connect(audio_analyser_in_gain);
+				source_new.connect(audio_analyser_pre_gain);
 			} catch (e) {
 				throw e;
 			}
@@ -96,7 +96,7 @@
 		for(var i = 0; i < fft_num_bins; i++) {
 			barHeight = audio_analyser_buffer[i];
 
-			canvas_ctx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+			canvas_ctx.fillStyle = 'rgb(0,' + (barHeight+100) + ',0)';
 			canvas_ctx.fillRect(x,canvas_height-barHeight/2,barWidth,barHeight/2);
 
 			x += barWidth + 1;
@@ -144,27 +144,29 @@
 		var canvas_oscilloscope_ctx = canvas_oscilloscope.getContext('2d');
 		render_oscilloscope(canvas_oscilloscope, audio_analyser);
 
-		// init pre-analyser gain slider
+		// init gain slider ranges
 		var gain_min = 0;
 		var gain_max = 100;
-		var $slider_analyser_pre_gain = $audio_controls.find('input#output_gain').first();
-		$slider_gain.attr('min', gain_min);
-		$slider_gain.attr('max', gain_max);
-		$slider_gain.attr('value', gain_initial);
-		$slider_gain.on('input', function () {
+
+		// init pre-analyser gain slider
+		var $slider_audio_analyser_pre_gain = $audio_controls.find('input#audio_analyser_gain_pre').first();
+		$slider_audio_analyser_pre_gain.attr('min', gain_min);
+		$slider_audio_analyser_pre_gain.attr('max', gain_max);
+		$slider_audio_analyser_pre_gain.attr('value', 100);
+		$slider_audio_analyser_pre_gain.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());
 			value_new = value_new / gain_max;
 			value_new = value_new * value_new;
-			audio_out_gain.gain.value = value_new;
+			audio_analyser_pre_gain.gain.value = value_new;
 		});
 
 		// init gain slider
-		var $slider_gain = $audio_controls.find('input#output_gain').first();
-		$slider_gain.attr('min', gain_min);
-		$slider_gain.attr('max', gain_max);
-		$slider_gain.attr('value', gain_initial);
-		$slider_gain.on('input', function () {
+		var $slider_audio_out_gain = $audio_controls.find('input#audio_out_gain').first();
+		$slider_audio_out_gain.attr('min', gain_min);
+		$slider_audio_out_gain.attr('max', gain_max);
+		$slider_audio_out_gain.attr('value', 67);
+		$slider_audio_out_gain.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());
 			value_new = value_new / gain_max;
