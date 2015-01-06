@@ -17,9 +17,13 @@
 
 <body>
 	<div id="audio_controls">
-		<label for="audio_analyser_gain_pre">Analyser pre-gain</label><input type="range" id="audio_analyser_gain_pre"></input>
-		<canvas id="oscilloscope" width="512" height="128"></canvas>
-		<input type="range" id="audio_out_gain"></input>
+		<div id="audio_controls_input">
+		</div>
+		<div id="audio_controls_output">
+			<label for="audio_analyser_gain_pre">Analyser pre-gain</label><input type="range" id="audio_analyser_gain_pre"></input>
+			<canvas id="oscilloscope" width="512" height="128"></canvas>
+			<input type="range" id="audio_out_gain"></input>
+		</div>
 	</div>
 	<div id="example">
 		{% block example %}
