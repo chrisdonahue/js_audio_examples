@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1 user-scalable=no">
+
+    <link rel="shortcut icon" type="image/x-icon" href="{{ static_url }}img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="{{ static_url }}img/favicon.ico">
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ static_url }}js_lib/katex/katex.min.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ static_url }}css/core.css" type="text/css"/>
+	{% block css_additional %}
+	{% endblock %}
+</head>
+
+<body>
+	<div id="audio_controls">
+		<label for="audio_analyser_gain_pre">Analyser pre-gain</label><input type="range" id="audio_analyser_gain_pre"></input>
+		<canvas id="oscilloscope" width="512" height="128"></canvas>
+		<input type="range" id="audio_out_gain"></input>
+	</div>
+	<div id="example">
+		{% block example %}
+		{% endblock %}
+
+		<section id="references">
+			<ul>
+				{% block references %}
+				{% endblock %}
+			</ul>
+		</section>
+	</div>
+
+	<script type="text/javascript" src="{{ static_url }}js_lib/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="{{ static_url }}js_lib/katex/katex.min.js"></script>
+	<script type="text/javascript" src="{{ static_url }}js/core.js"></script>
+	{% block js_additional %}
+	{% endblock %}
+</body>
+</html>

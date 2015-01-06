@@ -2,7 +2,17 @@ import fnmatch
 import os
 import shutil
 
+from jinja2 import Environment, FileSystemLoader
 import sass
+
+# init directory path variables
+PATH_DIRECTORY_OUTPUT = './compiled'
+PATH_DIRECTORY_CORE = './core'
+PATH_DIRECTORY_EXAMPLES = './examples'
+PATH_TEMPLATE_EXAMPLE_BASE = './core/html/example/example.html.templ'
+PATH_DIRECTORY_OUTPUT_CORE = PATH_DIRECTORY_OUTPUT + os.path.sep + PATH_DIRECTORY_CORE
+PATH_DIRECTORY_OUTPUT_EXAMPLES = PATH_DIRECTORY_OUTPUT + os.path.sep + PATH_DIRECTORY_EXAMPLES
+PATH_EXAMPLE_STATIC_URL = '../../core/'
 
 def _match_files_recursive(path_dir, pattern):
 	file_paths = []
@@ -11,23 +21,18 @@ def _match_files_recursive(path_dir, pattern):
 			file_paths.append(os.path.join(root, filename))
 	return file_paths
 
-# init directory path variables
-path_dir_output = './compiled'
-path_dir_core = './core'
-path_dir_examples = './examples'
-
 # rm output directory if exists and create it
-if os.path.exists(path_dir_output):
-	shutil.rmtree(path_dir_output, True)
-os.makedirs(path_dir_output)
+if os.path.exists(PATH_DIRECTORY_OUTPUT):
+	shutil.rmtree(PATH_DIRECTORY_OUTPUT, True)
+os.makedirs(PATH_DIRECTORY_OUTPUT)
 
 # copy files to output folder
-shutil.copytree(path_dir_core, path_dir_output + os.path.sep + path_dir_core)
-shutil.copytree(path_dir_examples, path_dir_output + os.path.sep + path_dir_examples)
+shutil.copytree(PATH_DIRECTORY_CORE, PATH_DIRECTORY_OUTPUT + os.path.sep + PATH_DIRECTORY_CORE)
+shutil.copytree(PATH_DIRECTORY_EXAMPLES, PATH_DIRECTORY_OUTPUT + os.path.sep + PATH_DIRECTORY_EXAMPLES)
 
 # find and compile scss files
 print '---- Compiling SASS Stylesheets ----'
-scss_file_paths = _match_files_recursive(path_dir_output, '*.scss')
+scss_file_paths = _match_files_recursive(PATH_DIRECTORY_OUTPUT, '*.scss')
 for scss_file_path in scss_file_paths:
 	# open scss
 	scss_file = open(scss_file_path, 'r')
@@ -55,5 +60,29 @@ for scss_file_path in scss_file_paths:
 	css_file.write(css_file_contents)
 	css_file.close()
 
+print 'Done!'
+
 # find and compile html templates
 print '---- Compiling HTML Templates ----'
+templates_file_paths = _match_files_recursive(PATH_DIRECTORY_OUTPUT, '*.html')
+templates_dir_paths = list(set(map(lambda x: os.path.split(x)[0], templates_file_paths)))
+template_dict = {}
+for template_file_path in templates_file_paths:
+	template_dict[os.path.split(template_file_path)[1]] = template_file_path
+
+loader = FileSystemLoader(templates_dir_paths)
+environment = Environment(loader=loader)
+example_base = environment.get_template('example_base.html')
+
+for template_name in environment.list_templates():
+	if template_name == 'example_base.html' or not ('.html' in template_name):
+		continue
+
+	example = environment.get_template(template_name)
+	example_rendered = example.render(static_url=PATH_EXAMPLE_STATIC_URL, example_base=example_base)
+	
+	with open(template_dict[template_name], 'w') as f:
+		f.write(example_rendered)
+		f.close()
+
+print 'Done!'
