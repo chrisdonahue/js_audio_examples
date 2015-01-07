@@ -30,6 +30,11 @@ os.makedirs(PATH_DIRECTORY_OUTPUT)
 shutil.copytree(PATH_DIRECTORY_CORE, PATH_DIRECTORY_OUTPUT + os.path.sep + PATH_DIRECTORY_CORE)
 shutil.copytree(PATH_DIRECTORY_EXAMPLES, PATH_DIRECTORY_OUTPUT + os.path.sep + PATH_DIRECTORY_EXAMPLES)
 
+# HACK rm swap files for vim
+paths_swap_files = _match_files_recursive(PATH_DIRECTORY_OUTPUT, '*.swp')
+for path_swap_file in paths_swap_files:
+	os.remove(path_swap_file)
+
 # find and compile scss files
 print '---- Compiling SASS Stylesheets ----'
 scss_file_paths = _match_files_recursive(PATH_DIRECTORY_OUTPUT, '*.scss')
