@@ -58,6 +58,7 @@
 			}
 		}
 	};
+	audex.audio.ctx = audio_ctx;
 	audex.audio.block_size = audio_processor_block_size;
 	audex.audio.sample_rate = audio_ctx.sampleRate;
 
@@ -88,9 +89,60 @@
 		return inverse;
 	};
 
+	var audex.helpers.positive_power_of_two_test = function (x) {
+		return typeof x === 'number' && (x > 0) && ((x & (x - 1)) == 0);
+	};
+
 	/*
 		helper classes
 	*/
+
+	// buffer
+
+	var buffer = function (channels_num, length) {
+		this.channels_num = channels_num;
+		this.length = length;
+		this.data = {};
+
+		// allocate buffer
+		for (var i = 0; i < this.channels_num; i++) {
+			this.data[i] = new Float32Array(this.length);
+		}
+	};
+
+	buffer.prototype.channel_get = function (channel_num) {
+		if (channel_num < 0 || channel_num >= this.channels_num) {
+			throw 'audex.audio.buffer: Requested invalid channel number (' + channel_num + ')';
+		}
+
+		return this.data[channel_num];
+	};
+
+	buffer.prototype.length_get = function () {
+		return this.length;
+	};
+
+	buffer.prototype.channels_num_get = function () {
+		return this.channels_num;
+	};
+
+	audex.audio.buffer = buffer;
+
+	// processor
+	
+	var processor = function (inputs_num, outputs_num) {
+		this.inputs_num = inputs_num;
+		this.outputs_num = outputs_num;
+	};
+
+	processor.prototype.prepare = function (sample_rate, buffer_length) {
+	};
+
+	processor.prototype.process = function (buffer_length, buffer) {
+	};
+
+	audex.audio.processor = {};
+	audex.audio.processor.base = processor;
 
 	// parameter
 
@@ -115,7 +167,7 @@
 	// parameter dezippered
 
 	var parameter_dezippered = function (value_initial) {
-		parameter.call(this, value_initial);
+		parameter.call(this, arguments);
 
 		this.value_next = value_initial;
 		this.epsilon = 1e-10;

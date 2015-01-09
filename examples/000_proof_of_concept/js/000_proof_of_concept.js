@@ -26,7 +26,6 @@
 		var y = 4 * Math.pow(x, 3) - 3 * x;
 		shaper_buffer[i] = y;
 	}
-    console.log(shaper_buffer);
 
 	// dsp callback
 	var sine_wave_gen_direct_process = function(e) {
@@ -64,11 +63,13 @@
             // store output value
 			buffer_output[num_samples_processed] = output;
 
-            // debug verify value
-            if (output < -1.0 || output > 1.0) {
-                console.log(y);
-                console.log(output);
-            }
+            // hard clip to get rid of edge rounding error
+			if (output > 1.0) {
+				output = 1.0;
+			}
+			else if (output < -1.0) {
+				output = -1.0;
+			}
 
             // increase time
 			time += time_increment;
