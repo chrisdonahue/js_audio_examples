@@ -15,16 +15,18 @@
 
 	// init state
 	var shaper_buffer_size = 2048;
+	var shaper_index_to_audio = audex.helpers.range_map_linear(1, shaper_buffer_size, -1.0, 1.0);
+	var audio_to_shaper_index = audex.helpers.range_map_linear(-1.0, 1.0, 1, shaper_buffer_size);
+    shaper_buffer_size += 3; // add 3 for interpolation purposes
+
+    // allocate and fill wave shaper
 	var shaper_buffer = new Float32Array(shaper_buffer_size);
-	var shaper_index_to_audio = audex.helpers.range_map_linear(0, 2047, -1.0, 1.0);
-	var audio_to_shaper_index = audex.helpers.range_map_linear(-1.0, 1.0, 0, 2047);
 	for (var i = 0; i < shaper_buffer_size; i++) {
-		// convert [0, 2047] to [-1.0, 1.0]
 		var x = (i * shaper_index_to_audio.m) + shaper_index_to_audio.b;
-		// 3rd order chebychev polynomial
 		var y = 4 * Math.pow(x, 3) - 3 * x;
 		shaper_buffer[i] = y;
 	}
+    console.log(shaper_buffer);
 
 	// dsp callback
 	var sine_wave_gen_direct_process = function(e) {
@@ -36,18 +38,49 @@
 		var index_dezipper = index.value_dezipper_start(block_size_inverse);
 		
 		while (num_samples_remaining) {
+            // calculate sin wave value
 			var y = Math.sin(2.0 * Math.PI * frequency.value_get() * time);
+
+            // apply index
 			y *= index_dezipper.value_current;
-			var offset = Math.floor((y * audio_to_shaper_index.m) + audio_to_shaper_index.b);
-			buffer_output[num_samples_processed] = shaper_buffer[offset];
+
+            // calculate table offset
+            var offset_f = (y * audio_to_shaper_index.m) + audio_to_shaper_index.b;
+
+            // stolen from d_array.c of pure data (tabread4~ code)
+            var offset = Math.floor(offset_f);
+            var frac = offset_f - offset;
+            var a = shaper_buffer[offset - 1];
+            var b = shaper_buffer[offset];
+            var c = shaper_buffer[offset + 1];
+            var d = shaper_buffer[offset + 2];
+            var cminusb = c - b;
+            var output = b + frac * (
+                cminusb - 0.1666667 * (1.0 - frac) * (
+                    (d - a - 3.0 * cminusb) * frac + (d + 2.0 * a - 3.0 * b)
+                )
+            );
+
+            // store output value
+			buffer_output[num_samples_processed] = output;
+
+            // debug verify value
+            if (output < -1.0 || output > 1.0) {
+                console.log(y);
+                console.log(output);
+            }
+
+            // increase time
 			time += time_increment;
 
-			num_samples_processed++;
-			num_samples_remaining--;
-
+            // dezipper parameters
 			if (index_dezipper.value_next_differs) {
 				index_dezipper.value_current += index_dezipper.value_increment;
 			}
+
+            // record amount processed
+			num_samples_processed++;
+			num_samples_remaining--;
 		}
 
 		index.value_dezipper_finish();
@@ -61,8 +94,8 @@
 		$example_ui = $('div.audio_example#waveshaper');
 
 		// init slider ranges
-		var frequency_min = 0.0;
-		var frequency_max = sample_rate / 2.0;
+		var frequency_min = 20.0;
+		var frequency_max = 1000.0;
 		var index_min = 0.0;
 		var index_max = 1.0;
 
