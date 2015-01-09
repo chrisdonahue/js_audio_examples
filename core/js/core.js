@@ -57,6 +57,29 @@
 	window.core.audio.sample_rate = audio_ctx.sampleRate;
 
 	/*
+		helper functions
+	*/
+
+	window.core.helpers = window.core.helpers || {};
+
+	window.core.helpers.range_map_linear = function (w, x, y, z) {
+		var m = (z - y) / (x - w);
+
+		return {
+			'm': m,
+			'b': (y - w * (m))
+		};
+	};
+
+	/*
+		helper classes
+	*/
+
+	window.core.classes = window.core.classes || {};
+
+	window.core.classes.
+
+	/*
 		initialize canvas analyser
 	*/
 
