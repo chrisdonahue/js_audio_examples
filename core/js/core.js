@@ -4,14 +4,19 @@
 	*/
 
 	/*
-		initialize audio
+		define our namespace
 	*/
 
-	// define namespace
-	window.core = window.core || {};
-	window.core.audio = window.core.audio || {};
+	var audex = {};
+	window.audex = window.audex || audex;
 
-	// init web audio
+	/*
+		init audio
+	*/
+
+	audex.audio = {};
+
+	// shim web audio API
 	var audio_ctx = null;
 	var audio_enabled = false;
 	try {
@@ -41,7 +46,7 @@
 	var audio_processor_block_size = 1024;
 	var audio_processor_input_num_channels = 1;
 	var audio_processor_output_num_channels = 1;
-	window.core.audio.add_source = function (source_name, process_callback) {
+	audex.audio.add_source = function (source_name, process_callback) {
 		if (audio_enabled) {
 			try {
 				var source_new = audio_ctx.createScriptProcessor(audio_processor_block_size, audio_processor_input_num_channels, audio_processor_output_num_channels);
@@ -53,31 +58,102 @@
 			}
 		}
 	};
-	window.core.audio.block_size = audio_processor_block_size;
-	window.core.audio.sample_rate = audio_ctx.sampleRate;
+	audex.audio.block_size = audio_processor_block_size;
+	audex.audio.sample_rate = audio_ctx.sampleRate;
 
 	/*
 		helper functions
 	*/
 
-	window.core.helpers = window.core.helpers || {};
+	audex.helpers = {};
 
-	window.core.helpers.range_map_linear = function (w, x, y, z) {
+	audex.helpers.range_map_linear = function (w, x, y, z) {
 		var m = (z - y) / (x - w);
 
 		return {
 			'm': m,
-			'b': (y - w * (m))
+			'b': (y - (w * m))
 		};
+	};
+
+	var inverse_memoize = {};
+	audex.helpers.inverse_memoized = function (x) {
+		if (x in inverse_memoize) {
+			return inverse_memoize[x];
+		}
+
+		var inverse = 1.0 / x;
+		inverse_memoize[x] = inverse;
+		
+		return inverse;
 	};
 
 	/*
 		helper classes
 	*/
 
-	window.core.classes = window.core.classes || {};
+	// parameter
 
-	window.core.classes.
+	var parameter = function (value_initial) {
+		this.value = value_initial;
+	};
+
+	parameter.prototype.value_get = function () {
+		return this.value;
+	};
+
+	parameter.prototype.value_next_get = function () {
+		return this.value;
+	};
+
+	parameter.prototype.value_next_set = function (value_next_new) {
+		this.value = value_next_new;
+	};
+
+	audex.audio.parameter = parameter;
+
+	// parameter dezippered
+
+	var parameter_dezippered = function (value_initial) {
+		parameter.call(this, value_initial);
+
+		this.value_next = value_initial;
+		this.epsilon = 1e-10;
+	};
+
+	parameter_dezippered.prototype = Object.create(parameter.prototype)
+	parameter_dezippered.prototype.constructor = parameter_dezippered;
+
+	parameter_dezippered.prototype.value_next_get = function () {
+		return this.value_next;
+	};
+
+	parameter_dezippered.prototype.value_next_set = function (value_next_new) {
+		this.value_next = value_next_new;
+	};
+
+	parameter_dezippered.prototype.value_dezipper_start = function (block_size_inverse) {
+		var value_next_differs = false;
+		var value_current = this.value;
+		var value_increment = 0.0;
+
+		if (this.value_next !== this.value) {
+			value_next_differs = true;
+			value_increment = block_size_inverse * (this.value_next - this.value);
+		}
+
+		return {
+			'value_next_differs': value_next_differs,
+			'value_current': value_current,
+			'value_increment': value_increment
+		};
+	};
+
+	parameter_dezippered.prototype.value_dezipper_finish = function () {
+		this.value = this.value_next;
+	};
+
+	audex.audio.parameter_dezippered = parameter_dezippered;
 
 	/*
 		initialize canvas analyser
@@ -85,23 +161,23 @@
 
 	// Shim by Paul Irish
 	// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-	window.requestAnimFrame = (function() {
+	window.requestAnimFrame = (function () {
 	  return  window.requestAnimationFrame ||
 			  window.webkitRequestAnimationFrame ||
 			  window.mozRequestAnimationFrame ||
 			  window.oRequestAnimationFrame ||
 			  window.msRequestAnimationFrame ||
-			  function(callback) {
+			  function (callback) {
 				  window.setTimeout(callback, 1000 / 60);
 			  };
 	})();
 
-	var render_oscilloscope = function(canvas, analyser) {
+	var render_oscilloscope = function (canvas, analyser) {
 		var canvas_ctx = canvas.getContext('2d');
 		var canvas_width = canvas.width;
 		var canvas_height = canvas.height;
 
-		requestAnimFrame(function(){
+		requestAnimFrame(function () {
 			render_oscilloscope(canvas, analyser);
 		});
 		
