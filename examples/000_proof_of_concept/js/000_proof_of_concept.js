@@ -1,16 +1,13 @@
 (function () {
 	var audex = window.audex;
 
-	// init audio processing
-	var time = 0.0;
-
 	// audio parameters
 	var block_size = audex.audio.block_size;
 	var block_size_inverse = audex.helpers.inverse_memoized(block_size);
 	var sample_rate = audex.audio.sample_rate;
 
 	// dsp parameters
-	var frequency = new audex.audio.parameter(440.0);
+	var frequency = new audex.audio.parameter_dezippered(440.0 / sample_rate);
 	var index = new audex.audio.parameter_dezippered(0.2);
 
 	// init state
@@ -27,24 +24,37 @@
 		shaper_buffer[i] = y;
 	}
 
+	// allocate oscillator
+	var oscillator = new audex.audio.processor.table_oscillator('sine', 2048);
+	var oscillator_buffer = new audex.audio.buffer(1, block_size);
+	var oscillator_buffer_data = oscillator_buffer.channel_get(0);
+
 	// dsp callback
-	var sine_wave_gen_direct_process = function(e) {
-		var buffer_output = e.outputBuffer.getChannelData(0);
+	var sine_wave_gen_direct_process = function (e) {
+		var output_buffer = e.outputBuffer.getChannelData(0);
+
+		// set up
 		var num_samples_remaining = block_size;
 		var num_samples_processed = 0;
-		var time_increment = 1.0 / sample_rate;
 
+		// render table oscillator
+		frequency.value_dezipper_ramp_linear(block_size, oscillator_buffer_data);
+		oscillator.process(block_size, oscillator_buffer);
+		frequency.value_dezipper_finish();
+
+		// set up index dezippering
 		var index_dezipper = index.value_dezipper_start(block_size_inverse);
 		
+		// waveshaper
 		while (num_samples_remaining) {
             // calculate sin wave value
-			var y = Math.sin(2.0 * Math.PI * frequency.value_get() * time);
+			var input_value = oscillator_buffer_data[num_samples_processed];
 
             // apply index
-			y *= index_dezipper.value_current;
+			input_value *= index_dezipper.value_current;
 
             // calculate table offset
-            var offset_f = (y * audio_to_shaper_index.m) + audio_to_shaper_index.b;
+            var offset_f = (input_value * audio_to_shaper_index.m) + audio_to_shaper_index.b;
 
             // stolen from d_array.c of pure data (tabread4~ code)
             var offset = Math.floor(offset_f);
@@ -60,9 +70,6 @@
                 )
             );
 
-            // store output value
-			buffer_output[num_samples_processed] = output;
-
             // hard clip to get rid of edge rounding error
 			if (output > 1.0) {
 				output = 1.0;
@@ -71,8 +78,8 @@
 				output = -1.0;
 			}
 
-            // increase time
-			time += time_increment;
+            // store output value
+			output_buffer[num_samples_processed] = output;
 
             // dezipper parameters
 			if (index_dezipper.value_next_differs) {
@@ -95,8 +102,8 @@
 		$example_ui = $('div.audio_example#waveshaper');
 
 		// init slider ranges
-		var frequency_min = 20.0;
-		var frequency_max = 1000.0;
+		var frequency_min = 20.0 / sample_rate;
+		var frequency_max = 1000.0 / sample_rate;
 		var index_min = 0.0;
 		var index_max = 1.0;
 
@@ -104,7 +111,7 @@
 		var $slider_frequency = $example_ui.find('input#frequency').first();
 		$slider_frequency.attr('min', frequency_min);
 		$slider_frequency.attr('max', frequency_max);
-		$slider_frequency.attr('step', 1.0);
+		$slider_frequency.attr('step', 0.0001);
 		$slider_frequency.attr('value', frequency.value_get());
 		$slider_frequency.on('input', function () {
 			var $el = $(this);

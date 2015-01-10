@@ -89,8 +89,8 @@
 		return inverse;
 	};
 
-	var audex.helpers.positive_power_of_two_test = function (x) {
-		return typeof x === 'number' && (x > 0) && ((x & (x - 1)) == 0);
+	audex.helpers.positive_power_of_two_test = function (x) {
+		return (typeof x === 'number') && (x > 0) && ((x & (x - 1)) === 0);
 	};
 
 	/*
@@ -167,7 +167,7 @@
 	// parameter dezippered
 
 	var parameter_dezippered = function (value_initial) {
-		parameter.call(this, arguments);
+		parameter.call(this, value_initial);
 
 		this.value_next = value_initial;
 		this.epsilon = 1e-10;
@@ -182,6 +182,24 @@
 
 	parameter_dezippered.prototype.value_next_set = function (value_next_new) {
 		this.value_next = value_next_new;
+	};
+
+	parameter_dezippered.prototype.value_dezipper_ramp_linear = function (buffer_length, buffer) {
+		var buffer_length_inverse = audex.helpers.inverse_memoized(buffer_length);
+		var value = this.value;
+
+		if (this.value_next === value) {
+			for (var i = 0; i < buffer_length; i++) {
+				buffer[i] = value;
+			}
+		}
+		else {
+			var increment = (this.value_next - value) * buffer_length_inverse;
+			for (var i = 0; i < buffer_length; i++) {
+				buffer[i] = value;
+				value += increment;
+			}
+		}
 	};
 
 	parameter_dezippered.prototype.value_dezipper_start = function (block_size_inverse) {

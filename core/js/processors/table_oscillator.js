@@ -12,7 +12,8 @@
 		this.phase = 0.0;
 
 		if (type !== undefined) {
-			this.set_table(table_generate(type, table_length || 1024));
+			table_length = table_length || 1024;
+			this.set_table(table_length, table_generate(type, table_length));
 		}
 	};
 	
@@ -31,7 +32,7 @@
 		}
 
 		var frequency = buffer.channel_get(0);
-		var output = buffer.channel_get_(0);
+		var output = buffer.channel_get(0);
 
 		var table_length = this.table_length;
 		var table_mask = this.table_mask;
@@ -46,6 +47,13 @@
 		var in0;
 		var inp1;
 		var inp2;
+
+		/*
+		if (this.phase === 0.0) {
+			console.log(frequency);
+			console.log(table);
+		}
+		*/
 
 		for (var i = 0; i < buffer_length; i++) {
 			// find current frequency
@@ -68,22 +76,43 @@
 
 			// calculate output
 			output[i] = in0 + 0.5 * fraction * (inp1 - inm1 + 
-				fraction * (4.0 + inp1 + 2.0 * inm1 - 5.0 * in0 - inp2 +
+				fraction * (4.0 * inp1 + 2.0 * inm1 - 5.0 * in0 - inp2 +
 				fraction * (3.0 * (in0 - inp1) - inm1 + inp2)));
+
+			/*
+			if (this.phase === 0.0) {
+				console.log(phase);
+				console.log(phase_increment);
+				console.log(phase_truncated);
+				console.log(fraction);
+				console.log(inm1);
+				console.log(in0);
+				console.log(inp1);
+				console.log(inp2);
+				console.log('-------');
+			}
+			*/
 
 			// add phase increment
 			phase += phase_increment;
 		}
 
-		while (phase > table_size) {
-			phase = phase - table_size;
+		/*
+		if (this.phase === 0.0) {
+			console.log(output);
+		}
+		*/
+
+		// prevent phase from overflowing
+		while (phase > table_length) {
+			phase = phase - table_length;
 		}
 		while (phase < 0.0) {
-			phase = phase + table_size;
+			phase = phase + table_length;
 		}
 
+		// store phase
 		this.phase = phase;
-		this.phase_increment = phase_increment;
 	};
 
 	// public methods
@@ -101,12 +130,13 @@
 		switch(type) {
 			case 'sine':
 				for (var i = 0; i < length; i++) {
-					table[i] = Math.sin(2.0 * Math.pi * (i / length));
+					table[i] = Math.sin(2.0 * Math.PI * (i / length));
 				}
 				break;
 			default:
 				throw 'audex.audio.processor.table_oscillator: Invalid table type (' + String(type) + ') specified';
 		}
+		return table;
 	};
 
 	var positive_power_of_two_test = function (x) {

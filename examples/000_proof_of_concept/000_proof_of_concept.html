@@ -36,6 +36,7 @@ Example 0: Waveshaping (proof of concept)
 {% endblock %}
 
 {% block references %}
+<!--
 <li>
 	<a href="http://cns-alumni.bu.edu/~slehar/fourier/fourier.html">
 		An Intuitive Explanation of Fourier Theory
@@ -46,8 +47,10 @@ Example 0: Waveshaping (proof of concept)
 		Sine wave
 	</a>
 </li>
+-->
 {% endblock %}
 
 {% block js_additional %}
+<script type="text/javascript" src="{{ static_url }}js/processors/table_oscillator.js"></script>
 <script type="text/javascript" src="js/000_proof_of_concept.js"></script>
 {% endblock %}
