@@ -3,7 +3,7 @@
 	var processor = audex.audio.processor.base;
 
 	// constructor
-	var table_oscillator = function (type, table_length) {
+	var table_oscillator_4 = function (type, table_length) {
 		processor.call(this, 1, 1);
 
 		this.table_length = -1;
@@ -18,17 +18,17 @@
 	};
 	
 	// inherit
-	table_oscillator.prototype = Object.create(processor.prototype);
-	table_oscillator.prototype.constructor = table_oscillator;
+	table_oscillator_4.prototype = Object.create(processor.prototype);
+	table_oscillator_4.prototype.constructor = table_oscillator_4;
 
 	// overrides
-	table_oscillator.prototype.prepare = function (sample_rate, buffer_length) {
+	table_oscillator_4.prototype.prepare = function (sample_rate, buffer_length) {
 		this.phase = 0.0;
 	};
 
-	table_oscillator.prototype.process = function (buffer_length, buffer) {
+	table_oscillator_4.prototype.process = function (buffer_length, buffer) {
 		if (this.table == null) {
-			throw 'audex.audio.processor.table_oscillator: No table assigned';
+			throw 'audex.audio.processor.table_oscillator_4: No table assigned';
 		}
 
 		var frequency = buffer.channel_get(0);
@@ -116,7 +116,7 @@
 	};
 
 	// public methods
-	table_oscillator.prototype.set_table = function (table_length, table) {
+	table_oscillator_4.prototype.set_table = function (table_length, table) {
 		positive_power_of_two_test(table_length);
 
 		this.table_length = table_length;
@@ -134,17 +134,17 @@
 				}
 				break;
 			default:
-				throw 'audex.audio.processor.table_oscillator: Invalid table type (' + String(type) + ') specified';
+				throw 'audex.audio.processor.table_oscillator_4: Invalid table type (' + String(type) + ') specified';
 		}
 		return table;
 	};
 
 	var positive_power_of_two_test = function (x) {
 		if (!(audex.helpers.positive_power_of_two_test(x))) {
-			throw 'audex.audio.processor.table_oscillator: Table length specified (' + String(x) + ') is not a positive power of two';
+			throw 'audex.audio.processor.table_oscillator_4: Table length specified (' + String(x) + ') is not a positive power of two';
 		}
 	};
 
 	// add to namespace
-	audex.audio.processor.table_oscillator = table_oscillator;
+	audex.audio.processor.table_oscillator_4 = table_oscillator_4;
 }) (window.audex);

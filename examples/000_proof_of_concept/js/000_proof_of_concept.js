@@ -97,6 +97,30 @@
 	// register callback
 	audex.audio.add_source('sine_wave_gen_direct', sine_wave_gen_direct_process);
 
+    // shaper display animation callback
+    var render_shaper = function (canvas) {
+        requestAnimFrame(function () {
+            render_shaper(canvas);
+        });
+
+        var canvas_ctx = canvas.getContext('2d');
+        var canvas_width = canvas.width;
+        var canvas_height = canvas.height;
+        var canvas_width_half = canvas_width / 2;
+        var canvas_height_half = canvas_height / 2;
+
+        canvas_ctx.strokeStyle = 'rgb(0, 0, 0)';
+        canvas_ctx.beginPath();
+        canvas_ctx.moveTo(canvas_width_half, 0);
+        canvas_ctx.lineTo(canvas_width_half, canvas_height);
+        canvas_ctx.stroke();
+
+        canvas_ctx.beginPath();
+        canvas_ctx.moveTo(0, canvas_height_half);
+        canvas_ctx.lineTo(canvas_width, canvas_height_half);
+        canvas_ctx.stroke();
+    };
+
 	// init ui
 	$(document).ready(function () {
 		$example_ui = $('div.audio_example#waveshaper');
@@ -106,6 +130,10 @@
 		var frequency_max = 1000.0 / sample_rate;
 		var index_min = 0.0;
 		var index_max = 1.0;
+
+        // init waveshaper display
+        var shaper_canvas = $example_ui.find('canvas#shaper').first().get(0);
+        render_shaper(shaper_canvas);
 
 		// init sin wave frequency slider
 		var $slider_frequency = $example_ui.find('input#frequency').first();

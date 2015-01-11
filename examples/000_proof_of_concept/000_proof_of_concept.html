@@ -28,7 +28,7 @@ Example 0: Waveshaping (proof of concept)
 	-->
 
 	<div class="audio_example" id="waveshaper">
-		<canvas id="waveshaping_function" height=100 width=100></canvas>
+		<canvas id="shaper" height=100 width=100></canvas>
 		<input type="range" id="frequency"></input>
 		<input type="range" id="index"></input>
 	</div>
@@ -51,6 +51,7 @@ Example 0: Waveshaping (proof of concept)
 {% endblock %}
 
 {% block js_additional %}
-<script type="text/javascript" src="{{ static_url }}js/processors/table_oscillator.js"></script>
+<script type="text/javascript" src="{{ static_url }}js/processors/table_oscillator_4.js"></script>
+<script type="text/javascript" src="{{ static_url }}js/processors/table_function_4.js"></script>
 <script type="text/javascript" src="js/000_proof_of_concept.js"></script>
 {% endblock %}

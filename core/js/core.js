@@ -1,4 +1,34 @@
 (function () {
+    /*
+        compatibility
+    */
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#Polyfill
+    if (!Function.prototype.bind) {
+      Function.prototype.bind = function(oThis) {
+        if (typeof this !== 'function') {
+          // closest thing possible to the ECMAScript 5
+          // internal IsCallable function
+          throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+
+        var aArgs   = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP    = function() {},
+            fBound  = function() {
+              return fToBind.apply(this instanceof fNOP && oThis
+                     ? this
+                     : oThis,
+                     aArgs.concat(Array.prototype.slice.call(arguments)));
+            };
+
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
+
+        return fBound;
+      };
+    }
+
 	/*
 		configure js libs
 	*/
@@ -93,6 +123,10 @@
 		return (typeof x === 'number') && (x > 0) && ((x & (x - 1)) === 0);
 	};
 
+    audex.helpers.allocate_buffer_float_32 = function (buffer_length) {
+        return new Float32Array(buffer_length);
+    };
+
 	/*
 		helper classes
 	*/
@@ -106,7 +140,7 @@
 
 		// allocate buffer
 		for (var i = 0; i < this.channels_num; i++) {
-			this.data[i] = new Float32Array(this.length);
+			this.data[i] = audex.helpers.allocate_buffer_float_32(this.length);
 		}
 	};
 
@@ -243,14 +277,14 @@
 	})();
 
 	var render_oscilloscope = function (canvas, analyser) {
-		var canvas_ctx = canvas.getContext('2d');
-		var canvas_width = canvas.width;
-		var canvas_height = canvas.height;
-
 		requestAnimFrame(function () {
 			render_oscilloscope(canvas, analyser);
 		});
 		
+		var canvas_ctx = canvas.getContext('2d');
+		var canvas_width = canvas.width;
+		var canvas_height = canvas.height;
+
 		analyser.getByteFrequencyData(audio_analyser_buffer);
 
 		var fft_num_bins = analyser.frequencyBinCount;
