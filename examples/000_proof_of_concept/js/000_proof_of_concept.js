@@ -6,92 +6,62 @@
 	var block_size_inverse = audex.helpers.inverse_memoized(block_size);
 	var sample_rate = audex.audio.sample_rate;
 
+    // create buffer for dsp callback
+	var buffer_audio = new audex.audio.buffer(2, block_size);
+    var buffer_audio_ch_0 = buffer_audio.channel_get(0);
+    var buffer_audio_ch_1 = buffer_audio.channel_get(1);
+
 	// dsp parameters
 	var frequency = new audex.audio.parameter_dezippered(440.0 / sample_rate);
 	var index = new audex.audio.parameter_dezippered(0.2);
 
-	// init state
-	var shaper_buffer_size = 2048;
-	var shaper_index_to_audio = audex.helpers.range_map_linear(1, shaper_buffer_size, -1.0, 1.0);
-	var audio_to_shaper_index = audex.helpers.range_map_linear(-1.0, 1.0, 1, shaper_buffer_size);
-    shaper_buffer_size += 3; // add 3 for interpolation purposes
+	// create oscillator
+	var oscillator = new audex.audio.processor.table_oscillator_4('sine', 2048);
 
-    // allocate and fill wave shaper
-	var shaper_buffer = new Float32Array(shaper_buffer_size);
-	for (var i = 0; i < shaper_buffer_size; i++) {
-		var x = (i * shaper_index_to_audio.m) + shaper_index_to_audio.b;
-		var y = 4 * Math.pow(x, 3) - 3 * x;
-		shaper_buffer[i] = y;
-	}
+    // define transfer functions
+    var transfer_functions = {
+        'chebyshev_3': {
+            'name': 'Chebyshev order 3',
+            'f_x': function (x) {
+                var f_x = 4 * Math.pow(x, 3) - 3 * x;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        }
+    };
 
-	// allocate oscillator
-	var oscillator = new audex.audio.processor.table_oscillator('sine', 2048);
-	var oscillator_buffer = new audex.audio.buffer(1, block_size);
-	var oscillator_buffer_data = oscillator_buffer.channel_get(0);
+	// create waveshaper
+    var shaper = new audex.audio.processor.table_function_4(transfer_functions.chebyshev_3.f_x, -1.0, 1.0, 2048);
+    shaper.table_range_set(-1.0, 1.0);
 
 	// dsp callback
 	var sine_wave_gen_direct_process = function (e) {
 		var output_buffer = e.outputBuffer.getChannelData(0);
 
-		// set up
-		var num_samples_remaining = block_size;
-		var num_samples_processed = 0;
-
 		// render table oscillator
-		frequency.value_dezipper_ramp_linear(block_size, oscillator_buffer_data);
-		oscillator.process(block_size, oscillator_buffer);
+		frequency.value_dezipper_ramp_linear(block_size, buffer_audio_ch_0);
 		frequency.value_dezipper_finish();
+		oscillator.process(block_size, buffer_audio);
 
-		// set up index dezippering
-		var index_dezipper = index.value_dezipper_start(block_size_inverse);
-		
-		// waveshaper
-		while (num_samples_remaining) {
-            // calculate sin wave value
-			var input_value = oscillator_buffer_data[num_samples_processed];
-
-            // apply index
-			input_value *= index_dezipper.value_current;
-
-            // calculate table offset
-            var offset_f = (input_value * audio_to_shaper_index.m) + audio_to_shaper_index.b;
-
-            // stolen from d_array.c of pure data (tabread4~ code)
-            var offset = Math.floor(offset_f);
-            var frac = offset_f - offset;
-            var a = shaper_buffer[offset - 1];
-            var b = shaper_buffer[offset];
-            var c = shaper_buffer[offset + 1];
-            var d = shaper_buffer[offset + 2];
-            var cminusb = c - b;
-            var output = b + frac * (
-                cminusb - 0.1666667 * (1.0 - frac) * (
-                    (d - a - 3.0 * cminusb) * frac + (d + 2.0 * a - 3.0 * b)
-                )
-            );
-
-            // hard clip to get rid of edge rounding error
-			if (output > 1.0) {
-				output = 1.0;
-			}
-			else if (output < -1.0) {
-				output = -1.0;
-			}
-
-            // store output value
-			output_buffer[num_samples_processed] = output;
-
-            // dezipper parameters
-			if (index_dezipper.value_next_differs) {
-				index_dezipper.value_current += index_dezipper.value_increment;
-			}
-
-            // record amount processed
-			num_samples_processed++;
-			num_samples_remaining--;
-		}
-
+        // generate index ramp
+        index.value_dezipper_ramp_linear(block_size, buffer_audio_ch_1);
 		index.value_dezipper_finish();
+
+        // apply index
+        for (var i = 0; i < block_size; i++) {
+            buffer_audio_ch_0[i] *= buffer_audio_ch_1[i];
+        }
+
+        // evaluate shaper
+        shaper.process(block_size, buffer_audio);
+
+        // output
+        for (var i = 0; i < block_size; i++) {
+            output_buffer[i] = buffer_audio_ch_0[i];
+        }
 	};
 
 	// register callback

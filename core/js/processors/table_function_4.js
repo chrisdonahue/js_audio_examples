@@ -3,10 +3,10 @@
 	var processor = audex.audio.processor.base;
 
 	// constructor
-	var table_function_4 = function (table_length, table_function, table_domain_min, table_domain_max) {
+	var table_function_4 = function (table_function, table_domain_min, table_domain_max, table_length) {
 		processor.call(this, 1, 1);
 
-        table_render.bind(this);
+        table_render = table_render.bind(this);
 
 		this.table_length = -1;
         this.table_length_internal = -1;
@@ -19,8 +19,8 @@
         this.table_index_to_domain = null;
         this.table_domain_to_index = null;
 
-		if (table_length !== undefined && table _function !== undefined && table_domain_min !== undefined && table_domain_max !== undefined) {
-			this.table_length = table_length;
+		if (table_function !== undefined && table_domain_min !== undefined && table_domain_max !== undefined) {
+			this.table_length = table_length || 1024;
             this.table_length_internal = table_length + 3;
             this.table_function = table_function;
             this.table_domain_min = table_domain_min;
@@ -59,23 +59,23 @@
 			input_current = input[i];
 
             // hard clip input
-            if (input_current < table_range_min) {
-                input_current = table_range_min;
+            if (input_current < table_domain_min) {
+                input_current = table_domain_min;
             }
-            else if (input_current > table_range_max) {
-                input_current = table_range_max;
+            else if (input_current > table_domain_max) {
+                input_current = table_domain_max;
             }
             
             // translate input to float offset
-            var offset_f = (input_value * this.table_domain_to_index.m) + this.table_domain_to_index.b;
+            var offset_f = (input_current * this.table_domain_to_index.m) + this.table_domain_to_index.b;
 
             // stolen from d_array.c of pure data (tabread4~ code)
             var offset = Math.floor(offset_f);
             var frac = offset_f - offset;
-            var a = shaper_buffer[offset - 1];
-            var b = shaper_buffer[offset];
-            var c = shaper_buffer[offset + 1];
-            var d = shaper_buffer[offset + 2];
+            var a = table[offset - 1];
+            var b = table[offset];
+            var c = table[offset + 1];
+            var d = table[offset + 2];
             var cminusb = c - b;
             var output_current = b + frac * (
                 cminusb - 0.1666667 * (1.0 - frac) * (
@@ -97,6 +97,10 @@
 	};
 
 	// public methods
+    table_function_4.prototype.table_get = function () {
+        return this.table;
+    };
+
 	table_function_4.prototype.table_length_set = function (table_length) {
         this.table_length = table_length;
         table_render();
