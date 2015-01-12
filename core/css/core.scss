@@ -1,11 +1,18 @@
+$spacing-large: 8px;
+$spacing-small: 4px;
+
 div#audio_controls {
-	div {
+	> div {
 		border: 2px solid;
 		border-radius: 4px;
-		padding: 4px;
+		padding: $spacing-small;
+
+        &#audio_controls_input {
+            margin-bottom: $spacing-large;
+        }
 	}
 
 	border: 2px solid;
 	border-radius: 4px;
-	padding: 4px;
+	padding: $spacing-large;
 }

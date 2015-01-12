@@ -18,10 +18,24 @@
 <body>
 	<div id="audio_controls">
 		<div id="audio_controls_input">
+            <div id="audio_controls_input_osc">
+                <input type="checkbox" id="osc_enable" checked></input>
+                <label>Oscillator gain:</label><input type="range" id="osc_gain"></input>
+                <label>Oscillator frequency:</label><input type="range" id="osc_freq"></input>
+            </div>
+            <div id="audio_controls_input_mic">
+                <input type="checkbox" id="mic_enable"></input>
+                <label>Microphone gain:</label><input type="range" id="mic_gain"></input>
+            </div>
+            <div id="audio_controls_input_gain">
+                <input type="checkbox" id="wav_enable"></input>
+                <label>Sound file gain:</label><input type="range" id="wav_gain"></input>
+            </div>
 		</div>
 		<div id="audio_controls_output">
-			<label for="audio_analyser_gain_pre">Analyser pre-gain</label><input type="range" id="audio_analyser_gain_pre"></input>
+			<label>Analyser pre-gain:</label><input type="range" id="audio_analyser_gain_pre"></input>
 			<canvas id="oscilloscope" width="512" height="128"></canvas>
+            <label>Output gain:</label>
 			<input type="range" id="audio_out_gain"></input>
 		</div>
 	</div>
