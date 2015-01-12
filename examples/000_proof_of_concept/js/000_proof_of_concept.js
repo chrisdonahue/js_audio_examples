@@ -115,7 +115,7 @@
     shaper.table_range_set(-1.0, 1.0);
 
 	// dsp callback
-	var sine_wave_gen_direct_process = function (e) {
+	var wave_shaper_process = function (e) {
 		var output_buffer = e.outputBuffer.getChannelData(0);
 
 		// render table oscillator
@@ -142,7 +142,7 @@
 	};
 
 	// register callback
-	audex.audio.add_source('sine_wave_gen_direct', sine_wave_gen_direct_process);
+	audex.audio.add_source('wave_shaper', wave_shaper_process);
 
     // shaper display animation callback
     var render_shaper = function (canvas) {
@@ -229,7 +229,7 @@
 		$slider_frequency.attr('min', frequency_min);
 		$slider_frequency.attr('max', frequency_max);
 		$slider_frequency.attr('step', 0.0001);
-		$slider_frequency.attr('value', frequency.value_get());
+		$slider_frequency.val(frequency.value_get());
 		$slider_frequency.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());
@@ -241,7 +241,7 @@
 		$slider_index.attr('min', index_min);
 		$slider_index.attr('max', index_max);
 		$slider_index.attr('step', 0.01);
-		$slider_index.attr('value', index.value_get());
+		$slider_index.val(index.value_get());
 		$slider_index.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());

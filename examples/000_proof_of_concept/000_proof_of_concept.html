@@ -10,45 +10,36 @@ Example 0: Waveshaping (proof of concept)
 
 {% block example %}
 <section id="introduction">
-	<!--
-	<h1>Sine Wave Generation</h1>
+	<h1>Waveshaping</h1>
 
 	<p>
-		Sine waves are the fundamental building blocks of computer music. Fourier theory states that any complex signal can be expressed as a sum of a series of simple sine waves<span class="citation" reference=0></span>. This simple concept allows us to represent the sound of an entire orchestra in a single wave form. There are a number of ways to generate sine waves, each with trade-offs in quality and efficiency. Which one you choose depends on the needs of your software.
+        Waveshaping is a signal processing technique that maps an input signal to an output signal through the use of a transfer function. The transfer function's domain must be well defined on the range of the output signal. The technique is useful for distortion and soft clipping, as the limit of the transfer function could approach -1 and 1 as the input signal approaches -infinity and infinity respectively.
 	</p>
-	-->
 </section>
 <section id="section_1">
-	<!--
-	<h2>Direct Sine Wave Generation</h2>
-
-	<p>
-		The mathematical formula for expressing a sine wave as a function of time is: <span class="latex">y(t) = A\sin(2 \pi f t + \varphi) = A\sin(\omega t + \varphi)</span><span class="citation" reference=1></span>. This formula can be used to directly render a sine wave to an audio buffer.
-	</p>
-	-->
-
+    <p>
+    Mathematically, waveshaping is a simple operation. It is defined as follows: <span class="latex">w(t) = f(i(t)x(t))</span> where <span class="latex">x(t)</span> is the input signal, <span class="latex">f(t)</span> is the transfer function and <span class="latex">i(t)</span> is an index function (which acts more or less as a numerical gain)<span class="citation" reference=0></span>. If <span class="latex">i(t)x(t)</span> has the range <span class="latex">[a, b]</span> then <span class="latex">f(t)</span> must be well defined on this domain.
+    </p>
+</section>
+<section id="section_2">
+    <p>
+        The following is an audio example demonstrating Chebyshev polynomial waveshaping on an input signal.
+    </P>
 	<div class="audio_example" id="waveshaper">
         <select id="shaper_function"></select>
-		<canvas id="shaper" height=256 width=256></canvas>
-		<input type="range" id="frequency"></input>
-		<input type="range" id="index"></input>
+		<label>Transfer function:</label><canvas id="shaper" height=256 width=256></canvas>
+		<label>Oscillator frequency:</label><input type="range" id="frequency"></input>
+		<label>Waveshaping index:</label><input type="range" id="index"></input>
 	</div>
 </section>
 {% endblock %}
 
 {% block references %}
-<!--
 <li>
-	<a href="http://cns-alumni.bu.edu/~slehar/fourier/fourier.html">
+	<a href="http://en.wikipedia.org/wiki/Waveshaper">
 		An Intuitive Explanation of Fourier Theory
 	</a>
 </li>
-<li>
-	<a href="http://en.wikipedia.org/wiki/Sine_wave">
-		Sine wave
-	</a>
-</li>
--->
 {% endblock %}
 
 {% block js_additional %}

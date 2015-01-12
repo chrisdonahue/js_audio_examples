@@ -16,3 +16,14 @@ div#audio_controls {
 	border-radius: 4px;
 	padding: $spacing-large;
 }
+
+div#example {
+    div.audio_example {
+        margin: $spacing-large;
+        border: 2px solid;
+        border-radius: 4px;
+        padding: $spacing-small;
+
+        background-color: #bdbdbd;
+    }
+}
