@@ -13,17 +13,94 @@
 
 	// dsp parameters
 	var frequency = new audex.audio.parameter_dezippered(440.0 / sample_rate);
-	var index = new audex.audio.parameter_dezippered(0.2);
+	var index = new audex.audio.parameter_dezippered(0.75);
 
 	// create oscillator
 	var oscillator = new audex.audio.processor.table_oscillator_4('sine', 2048);
 
     // define transfer functions
     var transfer_functions = {
+        'chebyshev_0': {
+            'name': 'Chebyshev (order 0)',
+            'f_x': function (x) {
+                var f_x = 1;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
+        'chebyshev_1': {
+            'name': 'Chebyshev (order 1)',
+            'f_x': function (x) {
+                var f_x = x;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
+        'chebyshev_2': {
+            'name': 'Chebyshev (order 2)',
+            'f_x': function (x) {
+                var f_x = 2 * Math.pow(x, 2) - 1;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
         'chebyshev_3': {
-            'name': 'Chebyshev order 3',
+            'name': 'Chebyshev (order 3)',
             'f_x': function (x) {
                 var f_x = 4 * Math.pow(x, 3) - 3 * x;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
+        'chebyshev_4': {
+            'name': 'Chebyshev (order 4)',
+            'f_x': function (x) {
+                var f_x = 8 * Math.pow(x, 4) - 8 * Math.pow(x, 2) + 1;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
+        'chebyshev_5': {
+            'name': 'Chebyshev (order 5)',
+            'f_x': function (x) {
+                var f_x = 16 * Math.pow(x, 5) - 20 * Math.pow(x, 3) + 5 * x;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
+        'chebyshev_6': {
+            'name': 'Chebyshev (order 6)',
+            'f_x': function (x) {
+                var f_x = 32 * Math.pow(x, 6) - 48 * Math.pow(x, 4) + 18 * Math.pow(x, 2) - 1;
+                return f_x;
+            },
+            'domain_min': -1.0,
+            'domain_max': 1.0,
+            'range_min': -1.0,
+            'range_max': 1.0
+        },
+        'chebyshev_7': {
+            'name': 'Chebyshev (order 7)',
+            'f_x': function (x) {
+                var f_x = 64 * Math.pow(x, 7) - 112 * Math.pow(x, 5) + 56 * Math.pow(x, 3) - 7 * x;
                 return f_x;
             },
             'domain_min': -1.0,
@@ -34,7 +111,7 @@
     };
 
 	// create waveshaper
-    var shaper = new audex.audio.processor.table_function_4(transfer_functions.chebyshev_3.f_x, -1.0, 1.0, 2048);
+    var shaper = new audex.audio.processor.table_function_4(transfer_functions.chebyshev_7.f_x, -1.0, 1.0, 2048);
     shaper.table_range_set(-1.0, 1.0);
 
 	// dsp callback
@@ -78,6 +155,10 @@
         var canvas_height = canvas.height;
         var canvas_width_half = canvas_width / 2;
         var canvas_height_half = canvas_height / 2;
+        var canvas_x_to_shaper_x = audex.helpers.range_map_linear(0, canvas_width - 1, -1.0, 1.0);
+        var shaper_y_to_canvas_y = audex.helpers.range_map_linear(-1.0, 1.0, canvas_width - 1, 0);
+
+        canvas_ctx.clearRect(0, 0, canvas_width, canvas_height);
 
         canvas_ctx.strokeStyle = 'rgb(0, 0, 0)';
         canvas_ctx.beginPath();
@@ -88,6 +169,21 @@
         canvas_ctx.beginPath();
         canvas_ctx.moveTo(0, canvas_height_half);
         canvas_ctx.lineTo(canvas_width, canvas_height_half);
+        canvas_ctx.stroke();
+
+        canvas_ctx.strokeStyle = 'rgb(255, 0, 0)';
+        canvas_ctx.beginPath();
+        for (var i = 0; i < canvas_width; i++) {
+            var x = (i * canvas_x_to_shaper_x.m) + canvas_x_to_shaper_x.b;
+            var y = shaper.f_x(x);
+            var y_canvas = (y * shaper_y_to_canvas_y.m) + shaper_y_to_canvas_y.b;
+            if (i === 0) {
+                canvas_ctx.moveTo(i, y_canvas);
+            }
+            else {
+                canvas_ctx.lineTo(i, y_canvas);
+            }
+        };
         canvas_ctx.stroke();
     };
 
@@ -100,6 +196,29 @@
 		var frequency_max = 1000.0 / sample_rate;
 		var index_min = 0.0;
 		var index_max = 1.0;
+
+        // init function selector
+        var shaper_function_select = $example_ui.find('select#shaper_function').first();
+        $.each(transfer_functions, function (key, value) {
+            if (value.f_x === shaper.table_function_get()) {
+                shaper_function_select
+                    .append($('<option></option>')
+                    .attr('value', key)
+                    .attr('selected', 'selected')
+                    .text(value.name));
+            }
+            else {
+                shaper_function_select
+                    .append($('<option></option>')
+                    .attr('value', key)
+                    .text(value.name));
+            }
+        });
+        shaper_function_select.change(function () {
+            var option = $(this);
+            var transfer_function = transfer_functions[$(this).val()].f_x;
+            shaper.table_function_set(transfer_function);
+        });
 
         // init waveshaper display
         var shaper_canvas = $example_ui.find('canvas#shaper').first().get(0);

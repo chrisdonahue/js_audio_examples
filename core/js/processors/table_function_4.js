@@ -101,6 +101,10 @@
         return this.table;
     };
 
+    table_function_4.prototype.table_function_get = function () {
+        return this.table_function;
+    };
+
 	table_function_4.prototype.table_length_set = function (table_length) {
         this.table_length = table_length;
         table_render();
@@ -122,9 +126,53 @@
         table_render();
     };
 
-	table_function_4.prototype.evaluate = function (x) {
-        // TODO after test process
-        return -1.0;
+	table_function_4.prototype.f_x = function (x) {
+		var table_length = this.table_length;
+		var table = this.table;
+
+        var table_domain_min = this.table_domain_min;
+        var table_domain_max = this.table_domain_max;
+        var table_range_min = this.table_range_min;
+        var table_range_max = this.table_range_max;
+
+        // find current input
+        input_current = x;
+
+        // hard clip input
+        if (input_current < table_domain_min) {
+            input_current = table_domain_min;
+        }
+        else if (input_current > table_domain_max) {
+            input_current = table_domain_max;
+        }
+        
+        // translate input to float offset
+        var offset_f = (input_current * this.table_domain_to_index.m) + this.table_domain_to_index.b;
+
+        // stolen from d_array.c of pure data (tabread4~ code)
+        var offset = Math.floor(offset_f);
+        var frac = offset_f - offset;
+        var a = table[offset - 1];
+        var b = table[offset];
+        var c = table[offset + 1];
+        var d = table[offset + 2];
+        var cminusb = c - b;
+        var output_current = b + frac * (
+            cminusb - 0.1666667 * (1.0 - frac) * (
+                (d - a - 3.0 * cminusb) * frac + (d + 2.0 * a - 3.0 * b)
+            )
+        );
+
+        // hard clip output_current to get rid of edge rounding error
+        if (output_current < table_range_min) {
+            output_current = table_range_min;
+        }
+        else if (output_current > table_range_max) {
+            output_current = table_range_max;
+        }
+
+        // return output
+        return output_current;
 	};
 
 
