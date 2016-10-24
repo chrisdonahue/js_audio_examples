@@ -59,7 +59,7 @@
 
 	// create master gain node
 	var audio_out_gain = audio_ctx.createGain();
-    audio_out_gain.gain.value = 0.1;
+    audio_out_gain.gain.value = 0.05;
 	audio_out_gain.connect(audio_ctx.destination);
 
 	// create analyser
@@ -369,7 +369,7 @@
 		var $slider_audio_out_gain = $audio_controls.find('input#audio_out_gain').first();
 		$slider_audio_out_gain.attr('min', gain_min);
 		$slider_audio_out_gain.attr('max', gain_max);
-		$slider_audio_out_gain.val(33);
+		$slider_audio_out_gain.val(5);
 		$slider_audio_out_gain.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());
