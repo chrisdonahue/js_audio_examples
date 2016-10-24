@@ -59,7 +59,7 @@
 
 	// create master gain node
 	var audio_out_gain = audio_ctx.createGain();
-    audio_out_gain.gain.value = 0.33;
+    audio_out_gain.gain.value = 0.1;
 	audio_out_gain.connect(audio_ctx.destination);
 
 	// create analyser
