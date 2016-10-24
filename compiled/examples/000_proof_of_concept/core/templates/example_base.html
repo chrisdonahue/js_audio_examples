@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1 user-scalable=no">
+
+    <link rel="shortcut icon" type="image/x-icon" href="{{ static_url }}img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="{{ static_url }}img/favicon.ico">
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ static_url }}js_lib/katex/katex.min.css" type="text/css"/>
+    <link rel="stylesheet" href="{{ static_url }}css/core.css" type="text/css"/>
+	{% block css_additional %}
+	{% endblock %}
+</head>
+
+<body>
+	<div id="audio_controls">
+		<div id="audio_controls_input">
+            <div id="audio_controls_input_osc">
+                <input type="checkbox" id="osc_enable" checked></input>
+                <label>Oscillator gain:</label><input type="range" id="osc_gain"></input>
+                <label>Oscillator frequency:</label><input type="range" id="osc_freq"></input>
+            </div>
+            <div id="audio_controls_input_mic">
+                <input type="checkbox" id="mic_enable"></input>
+                <label>Microphone gain:</label><input type="range" id="mic_gain"></input>
+            </div>
+            <div id="audio_controls_input_gain">
+                <input type="checkbox" id="wav_enable"></input>
+                <label>Sound file gain:</label><input type="range" id="wav_gain"></input>
+            </div>
+		</div>
+		<div id="audio_controls_output">
+			<label>Analyser pre-gain:</label><input type="range" id="audio_analyser_gain_pre"></input>
+			<canvas id="oscilloscope" width="512" height="128"></canvas>
+            <label>Output gain:</label>
+			<input type="range" id="audio_out_gain"></input>
+		</div>
+	</div>
+	<div id="example">
+		{% block example %}
+		{% endblock %}
+
+		<section id="references">
+            <h2>References</h2>
+			<ul>
+				{% block references %}
+				{% endblock %}
+			</ul>
+		</section>
+	</div>
+
+	<script type="text/javascript" src="{{ static_url }}js_lib/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="{{ static_url }}js_lib/katex/katex.min.js"></script>
+	<script type="text/javascript" src="{{ static_url }}js/core.js"></script>
+	{% block js_additional %}
+	{% endblock %}
+</body>
+</html>
