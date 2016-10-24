@@ -1,0 +1,17 @@
+div#audio_controls {
+  border: 2px solid;
+  border-radius: 4px;
+  padding: 8px; }
+  div#audio_controls > div {
+    border: 2px solid;
+    border-radius: 4px;
+    padding: 4px; }
+    div#audio_controls > div#audio_controls_input {
+      margin-bottom: 8px; }
+
+div#example div.audio_example {
+  margin: 8px;
+  border: 2px solid;
+  border-radius: 4px;
+  padding: 4px;
+  background-color: #bdbdbd; }

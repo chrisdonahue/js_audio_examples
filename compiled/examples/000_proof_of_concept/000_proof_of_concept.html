@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1 user-scalable=no">
+
+    <link rel="shortcut icon" type="image/x-icon" href="../../core/img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="../../core/img/favicon.ico">
+
+    <title>
+Example 0: Waveshaping (proof of concept)
+</title>
+
+    <link rel="stylesheet" href="../../core/js_lib/katex/katex.min.css" type="text/css"/>
+    <link rel="stylesheet" href="../../core/css/core.css" type="text/css"/>
+	
+<link rel="stylesheet" href="css/000_proof_of_concept.css" type="text/css"/>
+
+</head>
+
+<body>
+	<div id="audio_controls">
+		<div id="audio_controls_input">
+            <div id="audio_controls_input_osc">
+                <input type="checkbox" id="osc_enable" checked></input>
+                <label>Oscillator gain:</label><input type="range" id="osc_gain"></input>
+                <label>Oscillator frequency:</label><input type="range" id="osc_freq"></input>
+            </div>
+            <div id="audio_controls_input_mic">
+                <input type="checkbox" id="mic_enable"></input>
+                <label>Microphone gain:</label><input type="range" id="mic_gain"></input>
+            </div>
+            <div id="audio_controls_input_gain">
+                <input type="checkbox" id="wav_enable"></input>
+                <label>Sound file gain:</label><input type="range" id="wav_gain"></input>
+            </div>
+		</div>
+		<div id="audio_controls_output">
+			<label>Analyser pre-gain:</label><input type="range" id="audio_analyser_gain_pre"></input>
+			<canvas id="oscilloscope" width="512" height="128"></canvas>
+            <label>Output gain:</label>
+			<input type="range" id="audio_out_gain"></input>
+		</div>
+	</div>
+	<div id="example">
+		
+<section id="introduction">
+	<h1>Waveshaping</h1>
+
+	<p>
+        Waveshaping is a signal processing technique that maps an input signal to an output signal through the use of a transfer function. The transfer function's domain must be well defined on the range of the input signal. The technique is useful for soft clipping, as one could employ a transfer function <span class="latex">f(x)</span> such that <span class="latex">\lim_{x \rightarrow -\infty} f(x) = -1</span> and <span class="latex">\lim_{x \rightarrow \infty} f(x) = 1</span>.
+	</p>
+</section>
+<section id="section_1">
+    <p>
+    Mathematically, waveshaping is a simple operation. It is defined as follows: <span class="latex">w(t) = f(i(t)x(t))</span> where <span class="latex">x(t)</span> is the input signal, <span class="latex">f(t)</span> is the transfer function and <span class="latex">i(t)</span> is an index function (which acts more or less as a numerical gain)<span class="citation" reference=0></span>. If <span class="latex">i(t)x(t)</span> has the range <span class="latex">[a, b]</span> then <span class="latex">f(t)</span> must be well defined on this domain.
+    </p>
+</section>
+<section id="section_2">
+    <p>
+        The following is an audio example demonstrating Chebyshev polynomial waveshaping on an input signal.
+    </P>
+	<div class="audio_example" id="waveshaper">
+        <select id="shaper_function"></select>
+		<label>Transfer function:</label><canvas id="shaper" height=256 width=256></canvas>
+		<label>Oscillator frequency:</label><input type="range" id="frequency"></input>
+		<label>Waveshaping index:</label><input type="range" id="index"></input>
+	</div>
+</section>
+
+
+		<section id="references">
+            <h2>References</h2>
+			<ul>
+				
+<li>
+	<a href="http://en.wikipedia.org/wiki/Waveshaper">
+		"Waveshaper" on Wikipedia
+	</a>
+</li>
+
+			</ul>
+		</section>
+	</div>
+
+	<script type="text/javascript" src="../../core/js_lib/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="../../core/js_lib/katex/katex.min.js"></script>
+	<script type="text/javascript" src="../../core/js/core.js"></script>
+	
+<script type="text/javascript" src="../../core/js/processors/table_oscillator_4.js"></script>
+<script type="text/javascript" src="../../core/js/processors/table_function_4.js"></script>
+<script type="text/javascript" src="js/000_proof_of_concept.js"></script>
+
+</body>
+</html>
