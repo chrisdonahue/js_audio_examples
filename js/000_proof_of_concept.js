@@ -13,7 +13,7 @@
 
 	// dsp parameters
 	var frequency = new audex.audio.parameter_dezippered(440.0 / sample_rate);
-	var index = new audex.audio.parameter_dezippered(0.75);
+	var index = new audex.audio.parameter_dezippered(0.4);
 
 	// create oscillator
 	var oscillator = new audex.audio.processor.table_oscillator_4('sine', 2048);

@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="core/img/favicon.ico">
 
     <title>
-Example 0: Waveshaping (proof of concept)
+Week 4b: Waveshaping
 </title>
 
     <link rel="stylesheet" href="core/js_lib/katex/katex.min.css" type="text/css"/>
@@ -19,68 +19,44 @@ Example 0: Waveshaping (proof of concept)
 </head>
 
 <body>
-	<div id="audio_controls">
-		<div id="audio_controls_input">
-            <div id="audio_controls_input_osc">
-                <input type="checkbox" id="osc_enable" checked></input>
-                <label>Oscillator gain:</label><input type="range" id="osc_gain"></input>
-                <label>Oscillator frequency:</label><input type="range" id="osc_freq"></input>
-            </div>
-            <div id="audio_controls_input_mic">
-                <input type="checkbox" id="mic_enable"></input>
-                <label>Microphone gain:</label><input type="range" id="mic_gain"></input>
-            </div>
-            <div id="audio_controls_input_gain">
-                <input type="checkbox" id="wav_enable"></input>
-                <label>Sound file gain:</label><input type="range" id="wav_gain"></input>
-            </div>
-		</div>
-		<div id="audio_controls_output">
-			<label>Analyser pre-gain:</label><input type="range" id="audio_analyser_gain_pre"></input>
-			<canvas id="oscilloscope" width="512" height="128"></canvas>
-            <label>Output gain:</label>
-			<input type="range" id="audio_out_gain"></input>
-		</div>
-	</div>
 	<div id="example">
 		
 <section id="introduction">
 	<h1>Waveshaping</h1>
 
 	<p>
-        Waveshaping is a signal processing technique that maps an input signal to an output signal through the use of a transfer function. The transfer function's domain must be well defined on the range of the input signal. The technique is useful for soft clipping, as one could employ a transfer function <span class="latex">f(x)</span> such that <span class="latex">\lim_{x \rightarrow -\infty} f(x) = -1</span> and <span class="latex">\lim_{x \rightarrow \infty} f(x) = 1</span>.
+	<i>Waveshaping</i> is an audio processing technique that uses an input signal <span class="latex">x(t)</span> to drive a <i>transfer function</i> <span class="latex">f(x)</span>. The transfer function's domain must cover the range of the input signal, i.e. if <span class="latex">x(t) \in [-1, 1]</span>, then <span class="latex">f(x) : [-1, 1] \rightarrow [a, b]</span>. 
+	</p>
+
+	<p>
+	This technique is useful for soft clipping: one could employ a transfer function <span class="latex">f(x)</span> such that <span class="latex">\lim_{x \rightarrow -\infty} f(x) = -1</span> and <span class="latex">\lim_{x \rightarrow \infty} f(x) = 1</span>. By using such a function, we can ensure that a driving signal never exceeds the dynamic range of our system. An example function that satisfies these constraints is <span class="latex">arctan</span>.
+	</p>
+
+	<p>
+	Waveshaping can be parametrized using a <i>waveshaping index</i> <span class="latex">i(t)</span>, either a function or a constant. Given driving signal <span class="latex">x(t)</span>, transfer function <span class="latex">f(x)</span> and waveshaping index <span class="latex">i(t)</span>, waveshaping is defined as <span class="latex">w(t) = f(i(t)x(t))</span>.
 	</p>
 </section>
-<section id="section_1">
+<section id="example">
     <p>
-    Mathematically, waveshaping is a simple operation. It is defined as follows: <span class="latex">w(t) = f(i(t)x(t))</span> where <span class="latex">x(t)</span> is the input signal, <span class="latex">f(t)</span> is the transfer function and <span class="latex">i(t)</span> is an index function (which acts more or less as a numerical gain)<span class="citation" reference=0></span>. If <span class="latex">i(t)x(t)</span> has the range <span class="latex">[a, b]</span> then <span class="latex">f(t)</span> must be well defined on this domain.
+        The following is an audio example demonstrating Chebyshev polynomial waveshaping on a sinusoidal input. Chebyshev polynomials can be used to add partials to an input signal. Try changing the transfer function, oscillator frequency, and waveshaping index while looking at the spectrum analyzer to see the behavior.
     </p>
-</section>
-<section id="section_2">
-    <p>
-        The following is an audio example demonstrating Chebyshev polynomial waveshaping on an input signal.
-    </P>
 	<div class="audio_example" id="waveshaper">
-        <select id="shaper_function"></select>
-		<label>Transfer function:</label><canvas id="shaper" height=256 width=256></canvas>
+		<label>Output gain:</label>
+		<input type="range" id="audio_out_gain"></input>
+		<br>
 		<label>Oscillator frequency:</label><input type="range" id="frequency"></input>
+		<br>
+		<label>Transfer function:</label><canvas id="shaper" height=64 width=64></canvas>
+		<select id="shaper_function"></select>
+		<br>
 		<label>Waveshaping index:</label><input type="range" id="index"></input>
+		<br>
+		<label>Spectrum analyzer</label>
+		<canvas id="oscilloscope" width="512" height="128"></canvas>
+		<br>
 	</div>
 </section>
 
-
-		<section id="references">
-            <h2>References</h2>
-			<ul>
-				
-<li>
-	<a href="http://en.wikipedia.org/wiki/Waveshaper">
-		"Waveshaper" on Wikipedia
-	</a>
-</li>
-
-			</ul>
-		</section>
 	</div>
 
 	<script type="text/javascript" src="core/js_lib/jquery-1.11.1.min.js"></script>

@@ -59,7 +59,7 @@
 
 	// create master gain node
 	var audio_out_gain = audio_ctx.createGain();
-    audio_out_gain.gain.value = 0.05;
+    	audio_out_gain.gain.value = 1e-8;
 	audio_out_gain.connect(audio_ctx.destination);
 
 	// create analyser
@@ -70,6 +70,7 @@
 
 	// create master gain node
 	var audio_analyser_pre_gain = audio_ctx.createGain();
+	audio_analyser_pre_gain.gain.value = 0.1;
 	audio_analyser_pre_gain.connect(audio_analyser);
 
 	// add callback for audio processors
@@ -341,10 +342,9 @@
 		});
 
 		// init global controls
-		var $audio_controls = $('div#audio_controls');
 
 		// init oscilloscope
-		var canvas_oscilloscope = $audio_controls.find('canvas#oscilloscope').first().get(0);
+		var canvas_oscilloscope = $('canvas#oscilloscope').first().get(0);
 		var canvas_oscilloscope_ctx = canvas_oscilloscope.getContext('2d');
 		render_oscilloscope(canvas_oscilloscope, audio_analyser);
 
@@ -353,10 +353,10 @@
 		var gain_max = 100;
 
 		// init pre-analyser gain slider
-		var $slider_audio_analyser_pre_gain = $audio_controls.find('input#audio_analyser_gain_pre').first();
+		var $slider_audio_analyser_pre_gain = $('input#audio_analyser_gain_pre').first();
 		$slider_audio_analyser_pre_gain.attr('min', gain_min);
 		$slider_audio_analyser_pre_gain.attr('max', gain_max);
-		$slider_audio_analyser_pre_gain.val(100);
+		$slider_audio_analyser_pre_gain.val(5);
 		$slider_audio_analyser_pre_gain.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());
@@ -366,7 +366,7 @@
 		});
 
 		// init gain slider
-		var $slider_audio_out_gain = $audio_controls.find('input#audio_out_gain').first();
+		var $slider_audio_out_gain = $('input#audio_out_gain').first();
 		$slider_audio_out_gain.attr('min', gain_min);
 		$slider_audio_out_gain.attr('max', gain_max);
 		$slider_audio_out_gain.val(5);
@@ -374,7 +374,7 @@
 			var $el = $(this);
 			var value_new = Number($el.val());
 			value_new = value_new / gain_max;
-			value_new = value_new * value_new;
+			value_new = value_new * value_new * value_new * value_new;
 			audio_out_gain.gain.value = value_new;
 		});
 	});
