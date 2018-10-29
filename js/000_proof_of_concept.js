@@ -191,6 +191,19 @@
 	$(document).ready(function () {
 		$example_ui = $('div.audio_example#waveshaper');
 
+                var audio_state = false;
+                $('#audio_toggle').on('click', function () {
+                    console.log('hi');
+                    if (audio_state) {
+                        $('#audio_toggle').text('Start Audio');
+                        audex.audio.context.suspend();
+                    } else {
+                        $('#audio_toggle').text('Stop Audio');
+                        audex.audio.context.resume();
+                    }
+                    audio_state = !audio_state;
+                });
+
 		// init slider ranges
 		var frequency_min = 20.0 / sample_rate;
 		var frequency_max = 1000.0 / sample_rate;

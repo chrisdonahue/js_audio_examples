@@ -57,6 +57,9 @@
 		alert("Webkit Audio API not supported on this browser");
 	}
 
+        audex.audio.context = audio_ctx;
+        audio_ctx.suspend();
+
 	// create master gain node
 	var audio_out_gain = audio_ctx.createGain();
     	audio_out_gain.gain.value = 1e-8;
@@ -369,7 +372,7 @@
 		var $slider_audio_out_gain = $('input#audio_out_gain').first();
 		$slider_audio_out_gain.attr('min', gain_min);
 		$slider_audio_out_gain.attr('max', gain_max);
-		$slider_audio_out_gain.val(5);
+		$slider_audio_out_gain.val(25);
 		$slider_audio_out_gain.on('input', function () {
 			var $el = $(this);
 			var value_new = Number($el.val());
@@ -377,5 +380,6 @@
 			value_new = value_new * value_new * value_new * value_new;
 			audio_out_gain.gain.value = value_new;
 		});
+                audio_out_gain.gain.value = 0.05;
 	});
 })();
